@@ -1,10 +1,8 @@
 use std::collections::HashMap;
-use std::io::{BufRead, BufReader};
 use std::sync::{Arc, Mutex};
-use std::thread;
-use tauri::{window, Emitter, Manager, State, Window};
-use tauri_plugin_shell::process::{Command, CommandChild, CommandEvent};
+use tauri::{Emitter, Manager, State};
 use tauri_plugin_shell::ShellExt;
+use tauri_plugin_shell::process::{CommandChild, CommandEvent};
 
 #[derive(Default)]
 struct FfmpegProcesses {
@@ -22,7 +20,6 @@ async fn run_ffmpeg(
     process_id: String,
     args: Vec<String>,
     state: State<'_, Mutex<FfmpegProcesses>>,
-    window: Window,
 ) -> Result<(), String> {
     let (mut rx, child) = app
         .shell()
@@ -109,7 +106,6 @@ async fn run_ffmpeg_2pass(
     pass1_args: Vec<String>,
     pass2_args: Vec<String>,
     state: State<'_, Mutex<FfmpegProcesses>>,
-    window: Window,
 ) -> Result<(), String> {
     // Create a new child process storage
     let child_handle = Arc::new(Mutex::new(None));
@@ -402,6 +398,28 @@ struct FfmpegPassComplete {
     success: bool,
 }
 
+#[tauri::command]
+async fn copy_file_to_clipboard(file_path: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        use std::{os::windows::process::CommandExt, process::Command};
+
+        let ps_script = format!(r#"Set-Clipboard -Path '{}'"#, file_path.replace("'", "''"));
+
+        let output = Command::new("powershell")
+            .args(&["-Command", &ps_script])
+            .creation_flags(0x08000000)
+            .output()
+            .map_err(|e| format!("Failed to run PowerShell: {}", e))?;
+
+        if !output.status.success() {
+            let error = String::from_utf8_lossy(&output.stderr);
+            return Err(format!("PowerShell command failed: {}", error));
+        }
+    }
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -417,7 +435,8 @@ pub fn run() {
             greet,
             cancel_ffmpeg,
             run_ffmpeg_2pass,
-            run_ffmpeg
+            run_ffmpeg,
+            copy_file_to_clipboard
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

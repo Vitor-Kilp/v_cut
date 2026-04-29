@@ -4,6 +4,7 @@
   import Home from "@lucide/svelte/icons/house";
   import Film from "@lucide/svelte/icons/film";
   import Separator from "./components/ui/separator/separator.svelte";
+  import Logs from "@lucide/svelte/icons/logs";
 
   let { children } = $props();
 </script>
@@ -33,6 +34,17 @@
           <a href="/settings" {...props}>
             <Settings />
             <p>Settings</p>
+          </a>
+        {/snippet}
+      </Sidebar.MenuButton>
+    </Sidebar.Menu>
+
+    <Sidebar.Menu>
+      <Sidebar.MenuButton>
+        {#snippet child({ props })}
+          <a href="/logs" {...props}>
+            <Logs />
+            <p>Logs</p>
           </a>
         {/snippet}
       </Sidebar.MenuButton>

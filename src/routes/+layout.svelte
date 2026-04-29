@@ -17,6 +17,7 @@
   import Dropzone from "$lib/Dropzone.svelte";
   import { setFFfmpegRunnerContext } from "$lib/stores/runFFmpeg.svelte";
   import ProgressDialog from "$lib/ProgressDialog.svelte";
+  import { Toaster } from "$lib/components/ui/sonner";
 
   let { children, data }: LayoutProps = $props();
 
@@ -26,6 +27,8 @@
   setGlobalSettingsContext();
   setFFfmpegRunnerContext()
 </script>
+
+<Toaster />
 
 <SidebarProvider>
   <ProgressDialog />

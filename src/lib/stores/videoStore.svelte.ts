@@ -1,5 +1,4 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { VideoOptions } from "./videoOptions.svelte";
 
 export class Video {
   path = $state("");

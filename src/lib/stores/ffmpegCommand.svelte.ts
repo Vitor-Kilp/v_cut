@@ -13,7 +13,7 @@ export interface GlobalOptions {
     | "trace";
   threads?: number;
   hwaccel?: "auto" | "cuda" | "dxva2" | "qsv" | "vaapi" | string;
-  extra?: string[]; // any extra raw global args (keeps extensibility)
+  extra?: string[]; // any extra raw global args
 }
 
 export type VideoCodecs =
@@ -33,20 +33,19 @@ export interface FFmpegInputOptions {
   t?: string; // -t (input duration)
   hwaccel?: string; // input-specific hwaccel
   inputOptions?: string[]; // additional arbitrary args that must come before -i for this input
-  streamIndex?: number; // e.g., -map 0:v:0 if used
-  discardNonDefaultStreams?: boolean; // an app-level hint; not direct ffmpeg flag
+  streamIndex?: number; // -map 0:v:0 if used
+  discardNonDefaultStreams?: boolean;
   metadata?: Record<string, string>;
 }
 
-// Filter graph and filter objects
 export interface Filter {
-  // e.g. name: 'scale', args: ['1280:720']  -> produces "scale=1280:720"
+  // name: 'scale', args: ['1280:720']  -> produces "scale=1280:720"
   name: string;
-  args?: Array<string | number | Record<string, string>>; // allow keyed args
+  args?: Array<string | number | Record<string, string>>;
 }
 
 export interface FilterChain {
-  label?: string; // optional label for complex filter outputs e.g. [vout]
+  label?: string; // optional label for complex filter outputs
   inputs?: string[]; // labels or indexes
   outputs?: string[]; // labels
   filters: Filter[]; // ordered
@@ -55,7 +54,6 @@ export interface FilterChain {
 export interface FFmpegOutputOptions {
   path: string; // output file or URL
   format?: string; // -f mp4/hls/mpegts etc
-  // video
   videoCodec?: VideoCodecs; // -c:v
   crf?: number; // -crf (x264/x265)
   preset?: string; // -preset (x264/x265)

@@ -62,9 +62,5 @@
         </div>
       </form>
     </Card.Content>
-    <!-- <Card.Footer class="flex-col gap-2">
-    <Button type="submit" class="w-full">Login</Button>
-    <Button variant="outline" class="w-full">Login with Google</Button>
-  </Card.Footer> -->
   </Card.Root>
 </div>

@@ -7,10 +7,6 @@
   import ThemeToggle from "$lib/ThemeToggle.svelte";
   const settings = getGlobalSettingsContext();
 
-  $effect(() => {
-    console.log(settings.clipSavePath);
-  });
-
 </script>
 
 <div class={`flex flex-col w-full py-8 px-20 gap-6`}>

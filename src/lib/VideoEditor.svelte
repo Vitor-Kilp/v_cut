@@ -3,12 +3,10 @@
   import VideoOptions from "./VideoOptions.svelte";
   import { Slider } from "./components/ui/slider";
   import { fade } from "svelte/transition";
-  import Button from "./components/ui/button/button.svelte";
 
   const gallery = getGalleryContext();
-  let selectedtime = $state([0, 0]);
+  let selectedtime = $state([0.0, 0.0]);
   let showComponent = $state(false);
-  let previewListener = $state<null | number>(null);
 
   $effect(() => {
     if (gallery.selectedVideo) {
@@ -20,8 +18,7 @@
     }
   });
 
-
-function handleSliderChange(value: number[]) {
+  function handleSliderChange(value: number[]) {
     if (gallery.selectedVideo == null) return;
     selectedtime = value;
     gallery.selectedVideo.clipStart = value[0];
@@ -36,21 +33,21 @@ function handleSliderChange(value: number[]) {
     showComponent = false;
   });
 
-  function handlePreview() {
-    if (!gallery.selectedVideo.videoBind) return;
+  export function formatTime(sec: number): string {
+    if (!Number.isFinite(sec)) return "00:00.0";
 
-    if (previewListener) clearTimeout(previewListener);
-    gallery.selectedVideo.videoBind.currentTime = selectedtime[0];
-    gallery.selectedVideo.videoBind.play();
+    const hours = Math.floor(sec / 3600);
+    const minutes = Math.floor((sec % 3600) / 60);
+    const seconds = Math.floor(sec % 60);
+    const fraction = Math.floor((sec % 1) * 10);
 
-    previewListener = setInterval(() => {
-      if (
-        gallery.selectedVideo.videoBind &&
-        gallery.selectedVideo.videoBind.currentTime >= selectedtime[1]
-      ) {
-        gallery.selectedVideo.videoBind.pause();
-      }
-    }, 100);
+    const hh = String(hours).padStart(2, "0");
+    const mm = String(minutes).padStart(2, "0");
+    const ss = String(seconds).padStart(2, "0");
+
+    const base = `${mm}:${ss}.${fraction}`;
+
+    return hours > 0 ? `${hh}:${base}` : base;
   }
 </script>
 
@@ -72,7 +69,7 @@ function handleSliderChange(value: number[]) {
           }}
         >
         </video>
-        <div class="flex w-full justify-center py-4">
+        <div class="flex flex-col w-full justify-center py-4">
           <Slider
             type="multiple"
             class="cursor-pointer"
@@ -81,8 +78,11 @@ function handleSliderChange(value: number[]) {
             max={gallery.selectedVideo.duration}
             step={0.1}
           />
+          <div class="flex w-full justify-between">
+            <p>{formatTime(selectedtime[0])}</p>
+            <p>{formatTime(selectedtime[1])}</p>
+          </div>
         </div>
-        <Button class="cursor-pointer" onclick={handlePreview}>Preview</Button>
         <VideoOptions />
       </div>
     {/key}

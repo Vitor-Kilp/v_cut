@@ -3,7 +3,7 @@
   import { getGalleryContext } from "./stores/galleryStore.svelte";
   import * as Form from "$lib/components/ui/form/index.js";
   import { superForm } from "sveltekit-superforms";
-  import { zod4, zod4Client, zodClient } from "sveltekit-superforms/adapters";
+  import { zod4Client } from "sveltekit-superforms/adapters";
   import {
     encoders,
     encodingModes,
@@ -20,20 +20,17 @@
     type VideoCodecs,
   } from "./stores/ffmpegCommand.svelte";
   import { save } from "@tauri-apps/plugin-dialog";
-  import { videoDir } from "@tauri-apps/api/path";
   import { path } from "@tauri-apps/api";
   import { getFormSettingsContext } from "./stores/formStore.svelte";
   import { getGlobalSettingsContext } from "./stores/globalSettings.svelte";
-  import {
-    FFmpegRunner,
-    getFFfmpegRunnerContext,
-  } from "./stores/runFFmpeg.svelte";
-  import { ru } from "zod/locales";
+  import { getFFfmpegRunnerContext } from "./stores/runFFmpeg.svelte";
+  import { Button } from "./components/ui/button";
 
   const gallery = getGalleryContext();
   const formStore = getFormSettingsContext();
   const globalSettings = getGlobalSettingsContext();
   const runner = getFFfmpegRunnerContext();
+  let previewListener = $state<null | number>(null);
 
   const defaults = {
     mode: "two-pass",
@@ -67,15 +64,17 @@
 
     const defaultPath = await path.join(
       globalSettings.clipSavePath,
-      `${globalSettings.clipSavePrefix}${globalSettings.clipSaveIndex}.mp4`
+      `${globalSettings.clipSavePrefix}${globalSettings.clipSaveIndex}.mp4`,
     );
 
-    const savePath = await save({
+    const extensions = ["mp4", "mov", "mkv", "flv", "f4v", "avi"];
+
+    let savePath = await save({
       defaultPath,
       filters: [
         {
           name: "Video",
-          extensions: ["mp4", "mov", "mkv", "flv", "f4v", "avi"],
+          extensions,
         },
       ],
     });
@@ -101,7 +100,13 @@
     const scaleFilter: FilterChain = {
       inputs: ["1:v"],
       outputs: ["vout"],
-      filters: [{ name: "scale", args: [`-1:${$formData.resolution}`] }],
+      filters: [
+        { name: "scale", args: [`-1:${$formData.resolution}`] },
+        {
+          name: "pad", // Padding needed in case video width/height is odd
+          args: ["ceil(iw/2)*2:ceil(ih/2)*2"],
+        },
+      ],
     };
 
     const AudioTrim: FilterChain = {
@@ -148,10 +153,9 @@
 
     const [part1, part2] = ff.buildCommand(totalVideoDuration);
 
-    runner.setup(totalVideoDuration, savePath)
-    console.log(totalVideoDuration)
-    console.log("Running command: \n", part1, part2)
-    if (part2.length === 0) runner.run(part1)
+    runner.setup(totalVideoDuration, savePath);
+
+    if (part2.length === 0) runner.run(part1);
     else runner.run2Pass(part1, part2);
   }
 
@@ -165,7 +169,24 @@
     formStore.set($formData);
   });
 
+  function handlePreview() {
+    if (!gallery.selectedVideo.videoBind) return;
 
+    if (previewListener) clearTimeout(previewListener);
+    gallery.selectedVideo.videoBind.currentTime =
+      gallery.selectedVideo.clipStart;
+    gallery.selectedVideo.videoBind.play();
+
+    previewListener = setInterval(() => {
+      if (
+        gallery.selectedVideo.videoBind &&
+        gallery.selectedVideo.videoBind.currentTime >=
+          gallery.selectedVideo.clipEnd
+      ) {
+        gallery.selectedVideo.videoBind.pause();
+      }
+    }, 100);
+  }
 </script>
 
 <div class="flex flex-col space-y-6 w-full py-4 flex-1">
@@ -183,12 +204,16 @@
               bind:value={$formData.mode}
               name={props.name}
             >
-              <Select.Trigger {...props}  class="cursor-pointer">
+              <Select.Trigger {...props} class="cursor-pointer">
                 {$formData.mode}
               </Select.Trigger>
               <Select.Content>
                 {#each encodingModes as mode}
-                  <Select.Item value={mode} label={mode}  class="cursor-pointer"/>
+                  <Select.Item
+                    value={mode}
+                    label={mode}
+                    class="cursor-pointer"
+                  />
                 {/each}
               </Select.Content>
             </Select.Root>
@@ -205,12 +230,16 @@
               bind:value={$formData.resolution}
               name={props.name}
             >
-              <Select.Trigger {...props}  class="cursor-pointer">
+              <Select.Trigger {...props} class="cursor-pointer">
                 {`${$formData.resolution}p`}
               </Select.Trigger>
               <Select.Content>
                 {#each resolutions as resolution}
-                  <Select.Item value={resolution} label={`${resolution}p`}  class="cursor-pointer"/>
+                  <Select.Item
+                    value={resolution}
+                    label={`${resolution}p`}
+                    class="cursor-pointer"
+                  />
                 {/each}
               </Select.Content>
             </Select.Root>
@@ -227,12 +256,16 @@
               bind:value={$formData.fps}
               name={props.name}
             >
-              <Select.Trigger {...props}  class="cursor-pointer">
+              <Select.Trigger {...props} class="cursor-pointer">
                 {`${$formData.fps}`}
               </Select.Trigger>
               <Select.Content>
                 {#each fps as fpsOption}
-                  <Select.Item value={fpsOption} label={`${fpsOption}`}  class="cursor-pointer"/>
+                  <Select.Item
+                    value={fpsOption}
+                    label={`${fpsOption}`}
+                    class="cursor-pointer"
+                  />
                 {/each}
               </Select.Content>
             </Select.Root>
@@ -251,12 +284,16 @@
               onValueChange={(e) =>
                 handleEncoderChange(e as (typeof encoders)[number])}
             >
-              <Select.Trigger {...props}  class="cursor-pointer">
+              <Select.Trigger {...props} class="cursor-pointer">
                 {$formData.encoder}
               </Select.Trigger>
               <Select.Content>
                 {#each encoders as encoder}
-                  <Select.Item value={encoder} label={encoder}  class="cursor-pointer"/>
+                  <Select.Item
+                    value={encoder}
+                    label={encoder}
+                    class="cursor-pointer"
+                  />
                 {/each}
               </Select.Content>
             </Select.Root>
@@ -278,7 +315,11 @@
               </Select.Trigger>
               <Select.Content>
                 {#each getPresetsForEncoder($formData.encoder as (typeof encoders)[number]) as preset}
-                  <Select.Item value={preset} label={preset} class="cursor-pointer"/>
+                  <Select.Item
+                    value={preset}
+                    label={preset}
+                    class="cursor-pointer"
+                  />
                 {/each}
               </Select.Content>
             </Select.Root>
@@ -345,6 +386,9 @@
           <Form.FieldErrors />
         </Form.Field>
       {/if}
+      <Button class="mb-2 cursor-pointer" onclick={handlePreview}
+        >Preview</Button
+      >
       <Form.Button class="mb-2 cursor-pointer">Cut</Form.Button>
     </form>
   {/if}

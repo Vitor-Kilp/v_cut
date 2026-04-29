@@ -64,7 +64,6 @@ class GlobalSettings {
       console.log("found saved settings");
       try {
         const parsed = JSON.parse(saved);
-        console.log(parsed);
         this.clipSavePrefix = parsed.clipSavePrefix ?? defaults.clipSavePrefix;
         this.clipSaveIndex = parsed.clipSaveIndex ?? defaults.clipSaveIndex;
         this.askToSave = parsed.askToSave ?? defaults.askToSave;
