@@ -1,0 +1,2 @@
+put the ffmpeg binary here under the name "ffmpeg-x86_64-pc-windows-msvc.exe"
+according to tauri naming scheme
