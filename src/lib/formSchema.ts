@@ -71,7 +71,7 @@ const ffmpegSchema = z.discriminatedUnion('mode', [
     //   encoder: z.literal('hevc_amf'),
     //   preset: z.enum(amfPresets),
     // }),
-  ], {error: "CRF dosen't suport GPU encoders"}),
+  ], {error: "CRF doesn't support GPU encoders"}),
   // CBR mode
   z.discriminatedUnion('encoder', [
     cbrModeSchema.extend({

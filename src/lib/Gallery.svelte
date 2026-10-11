@@ -10,13 +10,13 @@
 <div class="flex flex-col gap-2 px-2 py-2 h-full">
   {#if gallery.videos.length > 0}
     {#each gallery.videos as video, i}
-      <div class="rouded-xl relative">
+      <div class="rounded-xl relative">
         <button
           class="cursor-pointer"
           onclick={() => {
-            goto("/")
-            gallery.selectedIndex = i
-            }}
+            goto("/");
+            gallery.selectedIndex = i;
+          }}
         >
           <!-- svelte-ignore a11y_media_has_caption -->
 

@@ -70,7 +70,7 @@ export class FFmpegRunner {
 
     try {
       this.state = "running";
-      this.message = "Running FFmepg";
+      this.message = "Running FFmpeg";
       await invoke("run_ffmpeg", {
         processId: this.processId,
         args,

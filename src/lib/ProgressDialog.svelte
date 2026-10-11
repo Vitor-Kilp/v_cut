@@ -26,11 +26,11 @@
   });
 
   function callToast() {
-    if (!open && (runner.state === "running" || runner.state === "waiting")) {
+    if (!open && runner.state === "running") {
       toast("Still running on background", {
         action: {
           label: "Show again",
-          onClick: () => open = true
+          onClick: () => (open = true),
         },
         dismissible: false,
         duration: 10000,

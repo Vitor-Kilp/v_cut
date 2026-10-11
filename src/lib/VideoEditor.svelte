@@ -29,11 +29,11 @@
   }
 
   $effect(() => {
-    gallery.videos[gallery.selectedIndex].src;
+    gallery.selectedVideo?.src;
     showComponent = false;
   });
 
-  export function formatTime(sec: number): string {
+  function formatTime(sec: number): string {
     if (!Number.isFinite(sec)) return "00:00.0";
 
     const hours = Math.floor(sec / 3600);

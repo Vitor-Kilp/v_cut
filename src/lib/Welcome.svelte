@@ -55,7 +55,7 @@
         <div class="flex flex-col gap-6">
           <div class="grid gap-2">
             <div class="flex items-center">
-              <Label for="file">Or select them manually bellow</Label>
+              <Label for="file">Or select them manually below</Label>
             </div>
             <Button onclick={handleFileSelect}>Select Files</Button>
           </div>

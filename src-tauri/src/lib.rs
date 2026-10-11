@@ -38,10 +38,6 @@ async fn run_ffmpeg(
         .insert(process_id.clone(), child_handle);
 
     let process_id_clone = process_id.clone();
-    //let state_clone = state.inner().clone();
-
-    // Spawn a task to handle events
-    //tauri::async_runtime::spawn(async move {
     // Listen to command events
     while let Some(event) = rx.recv().await {
         match event {
@@ -93,8 +89,7 @@ async fn run_ffmpeg(
     }
 
     // Clean up
-    //state_clone.lock().unwrap().processes.remove(&process_id_clone);
-    //});
+    state.lock().unwrap().processes.remove(&process_id_clone);
 
     Ok(())
 }

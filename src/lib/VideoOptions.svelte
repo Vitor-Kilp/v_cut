@@ -30,7 +30,7 @@
   const formStore = getFormSettingsContext();
   const globalSettings = getGlobalSettingsContext();
   const runner = getFFfmpegRunnerContext();
-  let previewListener = $state<null | number>(null);
+  let previewListener = $state<null | ReturnType<typeof setInterval>>(null);
 
   const defaults = {
     mode: "two-pass",
@@ -167,12 +167,18 @@
 
   $effect(() => {
     formStore.set($formData);
+    return () => {
+      if (previewListener) {
+        clearInterval(previewListener);
+        previewListener = null;
+      }
+    };
   });
 
   function handlePreview() {
     if (!gallery.selectedVideo.videoBind) return;
 
-    if (previewListener) clearTimeout(previewListener);
+    if (previewListener) clearInterval(previewListener);
     gallery.selectedVideo.videoBind.currentTime =
       gallery.selectedVideo.clipStart;
     gallery.selectedVideo.videoBind.play();
